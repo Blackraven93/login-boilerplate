@@ -9,23 +9,26 @@ export default function Home() {
    * 3. 컨텐츠 작성 가능
    */
 
-  const res = fetch(
-    `${process.env.NEXT_PUBLIC_URL}:${process.env.NEXT_PUBLIC_PORT}/api`,
-    {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        id: 1,
-        email: "reblackraven@gmail.com",
-      }),
-    }
-  );
+  const onClick = () => {
+    const res = fetch(
+      // `${process.env.NEXT_PUBLIC_URL}:${process.env.NEXT_PUBLIC_PORT}/api`,
+      "http://localhost:3000/api",
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          id: 1,
+          email: "reblackraven@gmail.com",
+        }),
+      }
+    );
 
-  res.then((data) => data.json().then((json) => console.log(json)));
+    res.then((data) => data.json().then((json) => console.log(json)));
+  };
 
   return (
     <main className="flex w-screen h-screen items-center justify-between">
-      Home
+      <button onClick={onClick}>click!</button>
     </main>
   );
 }
