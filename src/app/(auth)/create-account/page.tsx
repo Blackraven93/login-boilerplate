@@ -1,5 +1,6 @@
 "use client";
 
+import { signIn } from "next-auth/react";
 import DatePicker from "@/components/DatePicker";
 import { Dispatch, ReactNode, SetStateAction, useState } from "react";
 
@@ -34,7 +35,9 @@ const UserAccount = {
                 <DatePicker.Month />
                 <DatePicker.Day />
               </div>
-              <button type="button">다음</button>
+              <button type="button" onClick={() => signIn()}>
+                다음
+              </button>
             </form>
           </>
         );

@@ -1,6 +1,7 @@
 "use client";
 
-import Image from "next/image";
+import { useSession } from "next-auth/react";
+import { redirect } from "next/navigation";
 
 export default function Home() {
   /**
@@ -9,21 +10,29 @@ export default function Home() {
    * 3. 컨텐츠 작성 가능
    */
 
-  const onClick = () => {
-    const res = fetch(
-      // `${process.env.NEXT_PUBLIC_URL}:${process.env.NEXT_PUBLIC_PORT}/api`,
-      "http://localhost:3000/api",
-      {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          id: 1,
-          email: "reblackraven@gmail.com",
-        }),
-      }
-    );
+  /**
+   *  update: UpdateSession
+      data: null
+      status: "unauthenticated" | "loading"
+   */
 
-    res.then((data) => data.json().then((json) => console.log(json)));
+  const { data: session, status } = useSession();
+  if (status !== "authenticated") return redirect("/log-in");
+
+  console.log(session);
+  const onClick = () => {
+    // `${process.env.NEXT_PUBLIC_URL}:${process.env.NEXT_PUBLIC_PORT}/api`,
+    const res = fetch("http://localhost:3000/api/signIn", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        username: "cute_parrot",
+        password: "12345",
+        email: "RedParrot@gmail.com",
+      }),
+    });
+
+    res.then((data) => console.log(data));
   };
 
   return (
