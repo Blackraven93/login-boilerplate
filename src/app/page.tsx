@@ -2,10 +2,45 @@
 
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
-import { MouseEvent } from "react";
+import { MouseEvent, useEffect, useState } from "react";
 import useSWR from "swr";
+import useSWRMutation from "swr/mutation";
 import { Content } from "./api/(content)/tweet/route";
 import Link from "next/link";
+import { SubmitHandler, useForm } from "react-hook-form";
+
+type Inputs = {
+  text: string;
+};
+
+async function getLike(
+  url: string,
+  { arg: { email } }: { arg: { email: string | null | undefined } }
+) {
+  if (!email) return;
+
+  return await fetch(url, {
+    method: "POST",
+    body: JSON.stringify({
+      email,
+    }),
+  }).then((res) => res.json());
+}
+
+async function createContents(
+  url: string,
+  { arg: { text, email = "" } }: { arg: { text: string; email?: string } }
+) {
+  if (!text) return;
+
+  return await fetch(url, {
+    method: "POST",
+    body: JSON.stringify({
+      text,
+      email,
+    }),
+  }).then((res) => res.json());
+}
 
 export default function Home() {
   /**
@@ -19,73 +54,148 @@ export default function Home() {
       data: null
       status: "unauthenticated" | "loading"
    */
+  const { data: session, status } = useSession();
+  const router = useRouter();
+  const [mode, setMode] = useState<"all" | "liked">("all");
+  const tweet = useSWR("/api/tweet");
+  const likedTweet = useSWRMutation("/api/likedTweet", (url) =>
+    getLike(url, {
+      arg: {
+        email: session && session.user ? session.user.email : "",
+      },
+    })
+  );
+  const upload = useSWRMutation(
+    "/api/tweet/createTweet",
+    (url: string, { arg }: any) => {
+      return createContents(url, {
+        arg: {
+          text: arg.text,
+          email: arg.email,
+        },
+      });
+    }
+  );
 
-  const { data, mutate, isLoading } = useSWR("/api/tweet");
+  const {
+    register,
+    handleSubmit,
+    watch,
+    formState: { errors },
+  } = useForm<Inputs>();
 
-  if (isLoading) return <>로딩 중 입니다!</>;
-  // const { data: session, status } = useSession();
-  // const router = useRouter();
+  if (likedTweet.isMutating) {
+    return <>로딩 중 입니다!</>;
+  }
+  if (tweet.isLoading) return <>로딩 중 입니다!</>;
 
-  // if (status === "loading") return <h1>인증 중입니다. 잠시만 기다려주세요!</h1>;
+  if (status === "loading") return <h1>인증 중입니다. 잠시만 기다려주세요!</h1>;
 
-  // if (status !== "authenticated") {
-  //   return router.push(`/log-in?errorMessage=인증오류 입니다.`);
-  // }
+  if (status !== "authenticated") {
+    return router.push(`/log-in?errorMessage=인증오류 입니다.`);
+  }
 
-  const handleContentClick = (
-    event: MouseEvent<HTMLDivElement, globalThis.MouseEvent>,
-    data: Content
-  ) => {
-    console.log(data);
+  const handleUpload: SubmitHandler<Inputs> = async (data) => {
+    const { text } = data;
+    const result = await upload.trigger({ text, email: session.user?.email });
+    tweet.mutate("/api/tweet");
+    likedTweet.trigger();
   };
 
   return (
     <main className="flex w-screen h-screen items-center justify-center">
       <section className="w-9/12 border-1 border-black h-full">
         <h1 className="mt-4 text-4xl font-bold">Home</h1>
-        <div className="flex justify-between mt-4">
-          <div className="w-full flex justify-center hover:border-b-2 hover:border-point">
+        <div className="flex justify-between mt-4 cursor-pointer">
+          <button
+            className={`w-full flex justify-center hover:border-b-2 ${
+              mode === "all" && "border-b-2 border-point"
+            }`}
+            onClick={() => {
+              setMode("all");
+            }}
+          >
             All
-          </div>
-          <div className="w-full flex justify-center border-b-2 border-transparent hover:border-b-2 hover:border-point">
+          </button>
+          <button
+            className={`w-full flex justify-center border-b-2   ${
+              mode === "liked" && "border-b-2 border-point"
+            }`}
+            onClick={() => {
+              likedTweet.trigger();
+              setMode("liked");
+            }}
+          >
             Liked
-          </div>
+          </button>
         </div>
         <div className="w-full my-5">
-          <form action="" className="flex justify-between">
+          <form
+            className="flex justify-between"
+            onSubmit={handleSubmit(handleUpload)}
+          >
             <input
               type="text"
               placeholder="What is happening?!"
               className="p-2"
+              {...register("text")}
             />
-            <button className="bg-point p-2 rounded-2xl text-white">
+            <button
+              type="submit"
+              className="bg-point p-2 rounded-2xl text-white"
+            >
               Upload
             </button>
           </form>
         </div>
         <div>
-          {[...data.contents].map(
-            ({ id, createdAt, username, text }, index) => (
-              <Link
-                href={{
-                  pathname: `/tweet/${id}`,
-                  query: {
-                    username,
-                    text,
-                  },
-                }}
-                key={createdAt + index}
-                className={`flex flex-col w-full gap-1 border-t border-r border-l border-black p-3 ${
-                  data.contents.length - 1 === index && "border-b"
-                }`}
-              >
-                <div className="flex justify-between">
-                  <div className="font-semibold">{username}</div>
-                </div>
-                <div className="mt-2">{text}</div>
-              </Link>
-            )
-          )}
+          {mode === "all"
+            ? [...tweet.data.contents].map(
+                ({ id, createdAt, username, text }, index) => (
+                  <Link
+                    href={{
+                      pathname: `/tweet/${id}`,
+                      query: {
+                        username,
+                        text,
+                      },
+                    }}
+                    key={createdAt + index}
+                    className={`flex flex-col w-full gap-1 border-t border-r border-l border-black p-3 ${
+                      tweet.data.contents.length - 1 === index && "border-b"
+                    }`}
+                  >
+                    <div className="flex justify-between">
+                      <div className="font-semibold">{username}</div>
+                    </div>
+                    <div className="mt-2">{text}</div>
+                  </Link>
+                )
+              )
+            : likedTweet.data &&
+              [...likedTweet?.data?.contents].map(
+                ({ id, createdAt, username, text }, index) => (
+                  <Link
+                    href={{
+                      pathname: `/tweet/${id}`,
+                      query: {
+                        username,
+                        text,
+                      },
+                    }}
+                    key={createdAt + index}
+                    className={`flex flex-col w-full gap-1 border-t border-r border-l border-black p-3 ${
+                      likedTweet.data.contents.length - 1 === index &&
+                      "border-b"
+                    }`}
+                  >
+                    <div className="flex justify-between">
+                      <div className="font-semibold">{username}</div>
+                    </div>
+                    <div className="mt-2">{text}</div>
+                  </Link>
+                )
+              )}
         </div>
       </section>
     </main>
