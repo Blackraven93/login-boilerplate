@@ -42,7 +42,7 @@ export default function Page({
   const search = useSearchParams();
   const [description, username] = [search.get("text"), search.get("username")];
 
-  const { data, isLoading } = useSWR("/api/like", (url) =>
+  const { data, isLoading, mutate } = useSWR("/api/like", (url) =>
     getLike(url, {
       arg: {
         id,
@@ -62,6 +62,7 @@ export default function Page({
 
   const handleClick = async () => {
     const { like } = await trigger();
+    mutate("/api/like");
     setLikeCount(like);
   };
   return (

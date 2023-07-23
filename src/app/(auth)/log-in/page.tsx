@@ -47,7 +47,7 @@ export default function Page({}) {
 
   return (
     <main className="w-screen h-screen flex">
-      <section className="w-full h-full bg-black flex items-center justify-center">
+      <section className="w-full h-full flex items-center justify-center">
         <Image src="/blob.svg" alt="image" width={600} height={600} />
       </section>
       <section className="flex flex-col gap-6 w-10/12 h-full justify-center pl-6">

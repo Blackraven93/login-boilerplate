@@ -150,7 +150,7 @@ export default function Home() {
         </div>
         <div>
           {mode === "all"
-            ? [...tweet.data.contents].map(
+            ? [...tweet?.data?.contents].map(
                 ({ id, createdAt, username, text }, index) => (
                   <Link
                     href={{
