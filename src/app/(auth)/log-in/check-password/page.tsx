@@ -3,11 +3,6 @@ import { SubmitHandler, useForm } from "react-hook-form";
 import { signIn } from "next-auth/react";
 import Image from "next/image";
 import Link from "next/link";
-
-import { IUser } from "@/app/api/(user)/login/route";
-import fetchJson from "@/lib/fetchJson";
-import { useState } from "react";
-import { redirect } from "next/dist/server/api-utils";
 import { useSearchParams } from "next/navigation";
 
 interface IPassword {
@@ -35,15 +30,13 @@ export default function Page({}) {
   const email = useSearchParams().get("email");
 
   const onSubmit: SubmitHandler<IPassword> = async (data: IPassword) => {
-    const fetchEmail = await fetch("http://localhost:3000/api/checkEmail", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        email,
-      }),
-    });
+    const { password } = data;
 
-    const { hasEmail } = await fetchEmail.json();
+    await signIn("credentials", {
+      email,
+      password,
+      callbackUrl: "/",
+    });
   };
 
   return (

@@ -25,7 +25,7 @@ model Tweet {
     id        Int      @id @default(autoincrement())
     text      String
     createdAt DateTime @default(now())
-    userId    Int  @unique 
+    userId    Int  
     user      User @relation(fields: [userId], references: [id])
     likes     Like[]
     @@index([userId])
@@ -35,9 +35,11 @@ model Tweet {
 model Like {
     id        Int      @id @default(autoincrement())
     createdAt DateTime @default(now())
-    userId    Int @unique 
+    userId    Int  
     user      User @relation(fields: [userId], references: [id])
-    tweetId   Int @unique
+    tweetId   Int 
     tweet     Tweet @relation(fields: [tweetId], references: [id], onDelete: Cascade)
-    @@index([tweetId, userId])
+
+    @@index([tweetId])
+    @@index([userId])
 }

@@ -2,7 +2,7 @@ import prisma from "@/lib/prisma";
 import * as bcrypt from "bcrypt";
 
 export interface IUser {
-  password?: string;
+  password: string;
   email: string;
 }
 
@@ -15,7 +15,7 @@ export async function POST(request: Request) {
     },
   });
 
-  if (!body.password) return;
+  console.log(user && (await bcrypt.compare(body.password, user.password)));
 
   if (user && (await bcrypt.compare(body.password, user.password))) {
     const { password, ...userWithoutPass } = user;
