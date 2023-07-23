@@ -4,9 +4,10 @@ Project Repo : https://github.com/Blackraven93/login-boilerplate/tree/feat/fetch
 
 ### 시연 화면
 
-![Alt text](<화면 기록 2023-07-24 오전 5.34.56.gif>)
-![Alt text](<화면 기록 2023-07-24 오전 5.36.13.gif>)
-![Alt text](<화면 기록 2023-07-24 오전 5.37.21.gif>)
+![화면 기록 2023-07-24 오전 5 34 56](https://github.com/Blackraven93/login-boilerplate/assets/61782746/4f8a6482-e899-4ef7-a409-93f1be7a0ffc)
+![화면 기록 2023-07-24 오전 5 36 13](https://github.com/Blackraven93/login-boilerplate/assets/61782746/2bb81c40-21b7-467f-a4c0-6dedefc51106)
+![화면 기록 2023-07-24 오전 5 37 21](https://github.com/Blackraven93/login-boilerplate/assets/61782746/3ddfeef4-027a-4bbc-8498-2a4b98e07a06)
+
 
 - [x] : session이 없는 경우 log-in page로 redirect
 - [x] : 로그인 기능
